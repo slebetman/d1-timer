@@ -5,7 +5,7 @@ all:
 	arduino-cli compile -v --fqbn $(BOARD)
 
 upload: all
-	arduino-cli upload -v -p $(PORT) --fqbn $(BOARD) --discovery-timeout 1s
+	arduino-cli upload -v -p $(PORT) --fqbn $(BOARD)
 
 monitor:
 	picocom -b 115200 --lower-rts --lower-dtr /dev/ttyUSB0
