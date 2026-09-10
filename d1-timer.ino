@@ -93,15 +93,15 @@ void loop()
 
       if (button.click()) {
         if (button.once) {
-            int throttleMax = THROTTLE_FULL * vars.max / 255;
+            int throttleMax = THROTTLE_OFF + (((THROTTLE_FULL - THROTTLE_OFF) * vars.max) / 255);
 
-            Serial.println("Click!");
+            Serial.println("Click! " + String(vars.max) + " " + String(throttleMax));
 
-            rampUp.init( vars.rampUp );
             rampUp.setTo( throttleMax );
+            rampUp.init( vars.rampUp );
             pause.init( vars.cruise );
-            rampDown.init( vars.rampDown );
             rampDown.setFrom( throttleMax );
+            rampDown.init( vars.rampDown );
         }
         run();
       }

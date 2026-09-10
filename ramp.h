@@ -19,7 +19,7 @@ class Ramp {
 				increment = std::abs(to - from);
 			}
 			else {
-				increment = 1/seconds;
+				increment = (1/seconds) * ((float)std::abs(to - from) / 1000.0);
 			}
 			value = from;
 			_value = value;
