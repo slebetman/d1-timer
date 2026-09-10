@@ -26,8 +26,11 @@ class Wifi {
       WiFi.begin(ssid, pass);
 
       while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+        delay(250);
         Serial.print(".");
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(250);
+        digitalWrite(LED_BUILTIN, HIGH);
       }
 
       Serial.println("");

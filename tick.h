@@ -1,3 +1,6 @@
+#ifndef TICK
+#define TICK
+
 #define SECOND
 #define SECONDS
 
@@ -24,3 +27,5 @@ public:
 		return false;
 	}
 };
+
+#endif

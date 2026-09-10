@@ -1,8 +1,12 @@
+#ifndef BLINK
+#define BLINK
+
 class Blink
 {
 private:
   int count;
   int interval;
+  byte state;
   uint8_t pin;
 
 public:
@@ -10,6 +14,7 @@ public:
   {
     this->interval = interval;
     this->pin = pin;
+    this->state = 0;
     stop();
   }
 
@@ -19,7 +24,10 @@ public:
 
     if (count < interval)
     {
-      digitalWrite(pin, HIGH);
+      if (state != 1) {
+        state = 1;
+        digitalWrite(pin, LOW);
+      }
     }
     else
     {
@@ -27,7 +35,10 @@ public:
       {
         count = 0;
       }
-      digitalWrite(pin, LOW);
+      if (state != 0) {
+        state = 0;
+        digitalWrite(pin, HIGH);
+      }
     }
   }
 
@@ -36,7 +47,12 @@ public:
     if (count != 0)
     {
       count = 0;
-      digitalWrite(pin, LOW);
+      if (state != 0) {
+        state = 0;
+        digitalWrite(pin, HIGH);
+      }
     }
   }
 };
+
+#endif

@@ -6,6 +6,7 @@
 #include "wifi.h"
 #include "web.h"
 #include "vars.h"
+#include "blink.h"
 
 #define SERVO_MIN 1000
 #define SERVO_MAX 2000
@@ -19,24 +20,43 @@ Ramp rampUp(THROTTLE_OFF, THROTTLE_FULL);
 Ramp rampDown(THROTTLE_FULL, THROTTLE_OFF);
 Delay esc;
 Delay pause;
+Blink escBlink(LED_BUILTIN, 100);
+Blink runBlink(LED_BUILTIN, 500);
 Button button(D3);
 Button cancelButton(D3);
 Web server(80);
 Wifi wifi;
 
+// Calling .writeMicroseconds too frequently corrupts millis()
+// This is for rate limiting:
+byte throttleCount = 0;
+int throttleValue;
+#define THROTTLE_BANDGAP 20
+#define THROTTLE_RATE 50
+void setThrottle (int value) {
+  throttleCount++;
+  if (
+    std::abs(value - throttleValue) > THROTTLE_BANDGAP ||
+    throttleCount > THROTTLE_RATE
+  ) {
+    throttleValue = value;
+    throttleCount = 0;
+    throttle.writeMicroseconds(value);
+  }
+}
+
 void initialize () {
   Serial.println("init");
-  throttle.writeMicroseconds(THROTTLE_OFF);
+  setThrottle(THROTTLE_OFF);
   button.init();
   cancelButton.init();
-  throttle.writeMicroseconds(THROTTLE_OFF);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(D4, OUTPUT);
+  pinMode(D2, OUTPUT);
   pinMode(D3, INPUT_PULLUP);
 
   initVars();
@@ -45,7 +65,7 @@ void setup()
   Serial.begin(115200);
   delay(10);
 
-  throttle.attach(D4);
+  throttle.attach(D2);
   esc.init(2.5);
   initialize();
 
@@ -54,14 +74,23 @@ void setup()
   server.init();
 }
 
+byte runState = 0;
+
 void loop()
 {
   server.run();
 
   if (timer.tick()) {
     if (esc.wait()) { // wait for ESC to initialize
+      escBlink.blink();
+      setThrottle(THROTTLE_OFF);
     }
     else {
+      if (runState == 0) {
+        runState = 1;
+        escBlink.stop();
+      }
+
       if (button.click()) {
         if (button.once) {
             Serial.println("Click!");
@@ -71,24 +100,29 @@ void loop()
         }
         run();
       }
+      else {
+        setThrottle(THROTTLE_OFF);
+      }
     }
   }
 }
 
 void run () {
+  runBlink.blink();
   if (rampUp.run()) {
-    throttle.writeMicroseconds(std::round(rampUp.value));
+    setThrottle(std::round(rampUp.value));
     if (cancelButton.click()) {
       end();
     }
   }
   else if (pause.wait()) {
+    setThrottle(std::round(rampUp.value));
     if (cancelButton.click()) {
       end();
     }
   }
   else if (rampDown.run()) {
-    throttle.writeMicroseconds(std::round(rampDown.value));
+    setThrottle(std::round(rampDown.value));
     if (cancelButton.click()) {
       end();
     }
@@ -102,5 +136,6 @@ void run () {
 
 void end () {
   Serial.println("end");
+  runBlink.stop();
   initialize();
 }
