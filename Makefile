@@ -5,5 +5,5 @@ all:
 	arduino-cli compile -v --fqbn $(BOARD)
 
 upload: all
-	arduino-cli upload -v -p $(PORT) --fqbn $(BOARD)
+	arduino-cli upload -v -p $(PORT) --fqbn $(BOARD) --discovery-timeout 1s
 
