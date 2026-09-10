@@ -1,3 +1,7 @@
+#include <EEPROM.h>
+
+extern struct Vars vars;
+
 #ifndef VARS_H
 #define VARS_H
 
@@ -11,7 +15,6 @@ struct Vars {
   byte rampDown;
 };
 
-extern struct Vars vars;
 Vars vars;
 
 void initVars () {
