@@ -69,8 +69,8 @@ void setup()
   esc.init(2.5);
   initialize();
 
-  // wifi.initAP("DI_MINI_00001");
-  wifi.initClient("ADLY_2.4", "afiqazim");
+  wifi.initAP("DI_MINI_00001");
+  // wifi.initClient("MY_WIFI", "PASSWORD");
   server.init();
 }
 
@@ -93,10 +93,15 @@ void loop()
 
       if (button.click()) {
         if (button.once) {
+            int throttleMax = THROTTLE_FULL * vars.max / 255;
+
             Serial.println("Click!");
+
             rampUp.init( vars.rampUp );
+            rampUp.setTo( throttleMax );
             pause.init( vars.cruise );
             rampDown.init( vars.rampDown );
+            rampDown.setFrom( throttleMax );
         }
         run();
       }

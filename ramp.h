@@ -24,6 +24,14 @@ class Ramp {
 			value = from;
 			_value = value;
 		}
+
+		void setFrom (int value) {
+			from = value;
+		}
+
+		void setTo (int value) {
+			to = value;
+		}
 		
 		bool run () {
 			if (from < to) {
