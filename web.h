@@ -93,10 +93,10 @@ class Web {
         String sDown = server.arg("rampDown");
         Serial.println("handling post request ..");
 
-        vars.max = (byte)sMax.toInt();
-        vars.rampUp = (byte)sUp.toInt();
-        vars.cruise = (byte)sCruise.toInt();
-        vars.rampDown = (byte)sDown.toInt();
+        vars.max = sMax.toFloat();
+        vars.rampUp = sUp.toFloat();
+        vars.cruise = sCruise.toFloat();
+        vars.rampDown = sDown.toFloat();
 
         saveVars();
 

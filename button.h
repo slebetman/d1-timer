@@ -26,6 +26,10 @@ class Button {
       once = false;
     }
 
+    void softwareClick () {
+      state = 3;
+    }
+
     bool click () {
       int value = digitalRead(pin);
 

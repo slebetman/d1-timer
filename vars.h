@@ -5,15 +5,15 @@ extern struct Vars vars;
 #ifndef VARS_H
 #define VARS_H
 
-const uint32_t MAGIC = 0x0123abcd;
+const uint32_t MAGIC = 0xabcdef00;
 
 struct Vars
 {
   uint32_t magic;
   byte max;
-  byte rampUp;
-  byte cruise;
-  byte rampDown;
+  float rampUp;
+  float cruise;
+  float rampDown;
 };
 
 Vars vars;
@@ -38,9 +38,9 @@ Vars *readVars()
     // defaults:
     vars.magic = MAGIC;
     vars.max = 255;
-    vars.rampUp = 1;
+    vars.rampUp = 0.5;
     vars.cruise = 10;
-    vars.rampDown = 3;
+    vars.rampDown = 1.5;
 
     saveVars();
   }
