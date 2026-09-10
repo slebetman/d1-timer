@@ -7,7 +7,8 @@ extern struct Vars vars;
 
 const uint32_t MAGIC = 0x0123abcd;
 
-struct Vars {
+struct Vars
+{
   uint32_t magic;
   byte max;
   byte rampUp;
@@ -17,19 +18,23 @@ struct Vars {
 
 Vars vars;
 
-void initVars () {
+void initVars()
+{
   EEPROM.begin(sizeof(vars));
 }
 
-void saveVars () {
+void saveVars()
+{
   EEPROM.put(0, vars);
   EEPROM.commit();
 }
 
-Vars* readVars () {
+Vars *readVars()
+{
   EEPROM.get(0, vars);
 
-  if (vars.magic != MAGIC) {
+  if (vars.magic != MAGIC)
+  {
     // defaults:
     vars.magic = MAGIC;
     vars.max = 255;
