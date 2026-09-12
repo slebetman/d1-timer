@@ -33,132 +33,166 @@ byte throttleCount = 0;
 int throttleValue;
 #define THROTTLE_BANDGAP 20
 #define THROTTLE_RATE 50
-void setThrottle (int value) {
-  throttleCount++;
-  if (
-    std::abs(value - throttleValue) > THROTTLE_BANDGAP ||
-    throttleCount > THROTTLE_RATE
-  ) {
-    throttleValue = value;
-    throttleCount = 0;
-    throttle.writeMicroseconds(value);
-  }
+void setThrottle(int value)
+{
+	throttleCount++;
+	if (
+		std::abs(value - throttleValue) > THROTTLE_BANDGAP ||
+		throttleCount > THROTTLE_RATE
+	)
+	{
+		throttleValue = value;
+		throttleCount = 0;
+		throttle.writeMicroseconds(value);
+	}
 }
 
-void initialize () {
-  Serial.println("init");
-  setThrottle(THROTTLE_OFF);
-  button.init();
-  cancelButton.init();
-  digitalWrite(LED_BUILTIN, HIGH);
+void initialize()
+{
+	Serial.println("init");
+	setThrottle(THROTTLE_OFF);
+	button.init();
+	cancelButton.init();
+	digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(D2, OUTPUT);
-  pinMode(D1, INPUT_PULLUP);
+	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(D2, OUTPUT);
+	pinMode(D1, INPUT_PULLUP);
 
-  initVars();
-  readVars();
+	initVars();
+	readVars();
 
-  Serial.begin(115200);
-  delay(10);
+	Serial.begin(115200);
+	delay(10);
 
-  throttle.attach(D2);
+	throttle.attach(D2);
 
-  int check = digitalRead(D1);
+	int check = digitalRead(D1);
 
-  // Throttle calibration
-  if (check == LOW) {
-    Serial.println("Calibration");
-    setThrottle(THROTTLE_FULL);
-    button.init();
-    while(1) {
-      if (timer.tick()) {
-         if (button.click()) {
-           setThrottle(THROTTLE_OFF);
-          break;
-         }
-      }
-    }
-  }
+	// Throttle calibration
+	if (check == LOW)
+	{
+		Serial.println("Calibration");
+		setThrottle(THROTTLE_FULL);
+		button.init();
+		while (1)
+		{
+			if (timer.tick())
+			{
+				check = digitalRead(D1);
+				ESP.wdtFeed();
+				if (check == HIGH)
+				{
+					break;
+				}
+			}
+		}
+		while (1)
+		{
+			if (timer.tick())
+			{
+				ESP.wdtFeed();
+				if (button.click())
+				{
+					setThrottle(THROTTLE_OFF);
+					break;
+				}
+			}
+		}
+	}
 
-  esc.init(2.5);
-  initialize();
+	esc.init(2.5);
+	initialize();
 
-  wifi.initAP("DI_MINI_00001");
-  // wifi.initClient("MY_WIFI", "PASSWORD");
-  server.init();
+	wifi.initAP("DI_MINI_00001");
+	// wifi.initClient("MY_WIFI", "PASSWORD");
+	server.init();
 }
 
 byte runState = 0;
 
 void loop()
 {
-  server.run();
+	server.run();
 
-  if (timer.tick()) {
-    if (esc.wait()) { // wait for ESC to initialize
-      escBlink.blink();
-      setThrottle(THROTTLE_OFF);
-    }
-    else {
-      if (runState == 0) {
-        runState = 1;
-        escBlink.stop();
-      }
+	if (timer.tick())
+	{
+		if (esc.wait())
+		{ // wait for ESC to initialize
+			escBlink.blink();
+			setThrottle(THROTTLE_OFF);
+		}
+		else
+		{
+			if (runState == 0)
+			{
+				runState = 1;
+				escBlink.stop();
+			}
 
-      if (button.click()) {
-        if (button.once) {
-            int throttleMax = THROTTLE_OFF + (((THROTTLE_FULL - THROTTLE_OFF) * vars.max) / 255);
+			if (button.click())
+			{
+				if (button.once)
+				{
+					int throttleMax = THROTTLE_OFF + (((THROTTLE_FULL - THROTTLE_OFF) * vars.max) / 255);
 
-            Serial.println("Click! " + String(vars.max) + " " + String(throttleMax));
+					Serial.println("Click! " + String(vars.max) + " " + String(throttleMax));
 
-            rampUp.setTo( throttleMax );
-            rampUp.init( vars.rampUp );
-            pause.init( vars.cruise );
-            rampDown.setFrom( throttleMax );
-            rampDown.init( vars.rampDown );
-        }
-        run();
-      }
-      else {
-        setThrottle(THROTTLE_OFF);
-      }
-    }
-  }
+					rampUp.setTo(throttleMax);
+					rampUp.init(vars.rampUp);
+					pause.init(vars.cruise);
+					rampDown.setFrom(throttleMax);
+					rampDown.init(vars.rampDown);
+				}
+				run();
+			}
+			else
+			{
+				setThrottle(THROTTLE_OFF);
+			}
+		}
+	}
 }
 
-void run () {
-  runBlink.blink();
-  if (rampUp.run()) {
-    setThrottle(std::round(rampUp.value));
-    if (cancelButton.click()) {
-      end();
-    }
-  }
-  else if (pause.wait()) {
-    setThrottle(std::round(rampUp.value));
-    if (cancelButton.click()) {
-      end();
-    }
-  }
-  else if (rampDown.run()) {
-    setThrottle(std::round(rampDown.value));
-    if (cancelButton.click()) {
-      end();
-    }
-  }
-  else
-  {
-    end();
-  }
+void run()
+{
+	runBlink.blink();
+	if (rampUp.run())
+	{
+		setThrottle(std::round(rampUp.value));
+		if (cancelButton.click())
+		{
+			end();
+		}
+	}
+	else if (pause.wait())
+	{
+		setThrottle(std::round(rampUp.value));
+		if (cancelButton.click())
+		{
+			end();
+		}
+	}
+	else if (rampDown.run())
+	{
+		setThrottle(std::round(rampDown.value));
+		if (cancelButton.click())
+		{
+			end();
+		}
+	}
+	else
+	{
+		end();
+	}
 }
 
-
-void end () {
-  Serial.println("end");
-  runBlink.stop();
-  initialize();
+void end()
+{
+	Serial.println("end");
+	runBlink.stop();
+	initialize();
 }
