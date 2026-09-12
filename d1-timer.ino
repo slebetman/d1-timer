@@ -86,17 +86,6 @@ void setup()
 				ESP.wdtFeed();
 				if (check == HIGH)
 				{
-					break;
-				}
-			}
-		}
-		while (1)
-		{
-			if (timer.tick())
-			{
-				ESP.wdtFeed();
-				if (button.click())
-				{
 					setThrottle(THROTTLE_OFF);
 					break;
 				}
