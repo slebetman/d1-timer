@@ -22,8 +22,8 @@ Delay esc;
 Delay pause;
 Blink escBlink(LED_BUILTIN, 100);
 Blink runBlink(LED_BUILTIN, 500);
-Button button(D3);
-Button cancelButton(D3);
+Button button(D1);
+Button cancelButton(D1);
 Web server(80);
 Wifi wifi;
 
@@ -57,7 +57,7 @@ void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
-  pinMode(D3, INPUT_PULLUP);
+  pinMode(D1, INPUT_PULLUP);
 
   initVars();
   readVars();
@@ -66,6 +66,24 @@ void setup()
   delay(10);
 
   throttle.attach(D2);
+
+  int check = digitalRead(D1);
+
+  // Throttle calibration
+  if (check == LOW) {
+    Serial.println("Calibration");
+    setThrottle(THROTTLE_FULL);
+    button.init();
+    while(1) {
+      if (timer.tick()) {
+         if (button.click()) {
+           setThrottle(THROTTLE_OFF);
+          break;
+         }
+      }
+    }
+  }
+
   esc.init(2.5);
   initialize();
 
