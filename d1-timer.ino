@@ -8,8 +8,13 @@
 #include "vars.h"
 #include "blink.h"
 
-#define SERVO_MIN 1000
-#define SERVO_MAX 2000
+#define AP_SSID     "TIMER_00001"
+
+#define BUTTON_PIN  D1
+#define ESC_PIN     D2
+
+#define SERVO_MIN   1000
+#define SERVO_MAX   2000
 
 #define THROTTLE_OFF SERVO_MIN
 #define THROTTLE_FULL SERVO_MAX
@@ -22,8 +27,8 @@ Delay esc;
 Delay pause;
 Blink escBlink(LED_BUILTIN, 100);
 Blink runBlink(LED_BUILTIN, 500);
-Button button(D1);
-Button cancelButton(D1);
+Button button(BUTTON_PIN);
+Button cancelButton(BUTTON_PIN);
 Web server(80);
 Wifi wifi;
 
@@ -59,8 +64,8 @@ void initialize()
 void setup()
 {
 	pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D1, INPUT_PULLUP);
+	pinMode(ESC_PIN, OUTPUT);
+	pinMode(BUTTON_PIN, INPUT_PULLUP);
 
 	initVars();
 	readVars();
@@ -68,9 +73,9 @@ void setup()
 	Serial.begin(115200);
 	delay(10);
 
-	throttle.attach(D2);
+	throttle.attach(ESC_PIN);
 
-	int check = digitalRead(D1);
+	int check = digitalRead(BUTTON_PIN);
 
 	// Throttle calibration
 	if (check == LOW)
@@ -82,7 +87,7 @@ void setup()
 		{
 			if (timer.tick())
 			{
-				check = digitalRead(D1);
+				check = digitalRead(BUTTON_PIN);
 				ESP.wdtFeed();
 				if (check == HIGH)
 				{
@@ -96,7 +101,7 @@ void setup()
 	esc.init(2.5);
 	initialize();
 
-	wifi.initAP("DI_MINI_00001");
+	wifi.initAP(AP_SSID);
 	// wifi.initClient("MY_WIFI", "PASSWORD");
 	server.init();
 }
@@ -128,7 +133,7 @@ void loop()
 				{
 					int throttleMax = THROTTLE_OFF + (((THROTTLE_FULL - THROTTLE_OFF) * vars.max) / 255);
 
-					Serial.println("Click! " + String(vars.max) + " " + String(throttleMax));
+					Serial.println("Click!");
 
 					rampUp.setTo(throttleMax);
 					rampUp.init(vars.rampUp);
